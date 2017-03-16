@@ -88,6 +88,8 @@ def configure_app(app, config):
 
     if config:
         app.config.from_object(config)
+    if not app.config.get('SQLALCHEMY_DATABASE_URI'):
+        raise RuntimeError("No database connection defined.  Can't continue")
 
 
 def configure_jinja(app):

@@ -16,10 +16,7 @@ def best_sql_url():
     elif 'SQLALCHEMY_DATABASE_URI' in env:
         return env.get('SQLALCHEMY_DATABASE_URI')
     else:
-        return env.get(
-            'DATABASE_URL',
-            'postgresql://test_user:4tests_only@localhost/portal_unit_tests'
-        )
+        return env.get('DATABASE_URL')
 
 
 class BaseConfig(object):
@@ -115,7 +112,8 @@ class TestConfig(BaseConfig):
     SERVER_NAME = 'localhost:5005'
     LIVESERVER_PORT = 5005
     SQLALCHEMY_ECHO = False
-
+    SQLALCHEMY_DATABASE_URI=\
+            'postgresql://test_user:4tests_only@localhost/portal_unit_tests'
 
     WTF_CSRF_ENABLED = False
     FILE_UPLOAD_DIR = 'test_uploads'
