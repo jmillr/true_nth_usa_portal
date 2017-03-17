@@ -8,15 +8,21 @@ def best_sql_url():
     """Return compliant sql url from available enviornment variables"""
     env = os.environ
     if 'PGDATABASE' in env:
+        # Preferred route.  With PG* vars defines, `psql` just works
         return (
             'postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}/{PGDATABASE}'.format(
                 PGUSER=env.get('PGUSER'), PGPASSWORD=env.get('PGPASSWORD'),
                 PGHOST=env.get('PGHOST', 'localhost'),
                 PGDATABASE=env.get('PGDATABASE')))
     elif 'SQLALCHEMY_DATABASE_URI' in env:
+        # Soon to be retired method - still occasionally in application.cfg
         return env.get('SQLALCHEMY_DATABASE_URI')
-    else:
+    elif 'DATABASE_URL' in env:
+        # Heroku provides DATABASE_URL by default
         return env.get('DATABASE_URL')
+    else:
+        # All else failed, try the test value used on travis
+        return env.get('TEST_DATABASE_URI')
 
 
 class BaseConfig(object):
