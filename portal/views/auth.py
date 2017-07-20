@@ -494,7 +494,7 @@ def logout(prevent_redirect=False, reason=None):
             event, user_id=user_id, subject_id=user_id, context='login')
 
         if request.cookies.get('FORCE_REAUTH'):
-            delete_facebook_authorization()
+            delete_facebook_authorization(user_id)
 
     logout_user()
     session.clear()
