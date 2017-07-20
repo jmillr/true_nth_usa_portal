@@ -39,7 +39,7 @@ auth = Blueprint('auth', __name__)
 
 
 @auth.route('/deauthorized', methods=('POST',))
-@csrf.exempt
+@csrf.portal_exempt
 def deauthorized():
     """Callback URL configured on facebook when user deauthorizes
 
@@ -493,7 +493,9 @@ def logout(prevent_redirect=False, reason=None):
             event = ':'.join((event, reason))
         auditable_event(
             event, user_id=user_id, subject_id=user_id, context='login')
-        # delete_facebook_authorization()  #Not using at this time
+
+        if request.cookies.get('FORCE_REAUTH'):
+            delete_facebook_authorization()
 
     logout_user()
     session.clear()

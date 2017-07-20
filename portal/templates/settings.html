@@ -12,6 +12,7 @@
         {{ form.hidden_tag() }}
 
         {{ render_field(form.timeout, tabindex=5) }}
+        {{ render_field(form.force_reauth, tabindex=15) }}
 
         <button type="submit" class="btn btn-tnth-primary">Save Settings</button>
     </form>
