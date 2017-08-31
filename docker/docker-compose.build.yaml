@@ -24,3 +24,5 @@ services:
         target: "${GIT_REPO:-/mnt/git_repo}"
         type: bind
         read_only: true
+
+volumes: {}
