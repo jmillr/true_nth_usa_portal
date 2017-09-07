@@ -2411,7 +2411,7 @@ div.biopsy-option:last-of-type{
 .withdrawn-label [data-eproms] {
   display: inline;
 }
-.withdrawn-label [data-truenth] {
+[data-truenth] {
   display: none;
 }
 
@@ -2441,6 +2441,14 @@ div.biopsy-option:last-of-type{
   }
   .consentlist-cell{
     background-color: #fbf9f9;
+  }
+  tr.history {
+    opacity: @disabledOpacity;
+  }
+  tr.history.odd {
+    td {
+      background-color: #f2f2f3;
+    }
   }
 }
 

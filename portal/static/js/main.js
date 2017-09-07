@@ -567,12 +567,13 @@ var fillContent = {
                               "registrationDate": i18next.t("Regiatration Date"),
                               "locale": i18next.t("GMT")
                              };
-            var headerArray = ['Organization',
+            var headerArray = [ 'n/a',
+                                i18next.t('Organization'),
                                 '<span class="eproms-consent-status-header">' + headerEnum["consentStatus"] + '</span><span class="truenth-consent-status-header">' + headerEnum["status"] + '</span>',
                                 '<span class="agreement">' + headerEnum["agreement"] + '</span>',
                                 '<span class="eproms-consent-date-header">' + headerEnum["consentDate"] + '</span><span class="truenth-consent-date-header">' + headerEnum["registrationDate"] + '</span> <span class="gmt">(' + headerEnum["locale"] + ')</span>'];
             headerArray.forEach(function (title, index) {
-                if (title != "n/a") content += "<TH class='consentlist-header'>" + title + "</TH>";
+                if (title != "n/a") content += "<TH class='consentlist-header' style='width:" + (100/headerArray.length) +"%'>" + title + "</TH>";
             });
 
             var hasContent = false;
@@ -586,6 +587,7 @@ var fillContent = {
                     (data.tous).forEach(function(item) {
                         var fType = $.trim(item.type).toLowerCase();
                         if (fType == "subject website consent" || fType == "website terms of use") {
+                            item.raw_date = item.accepted;
                             item.accepted = tnthDates.formatDateString(item.accepted); //format to accepted format D m y
                             item.display_type = $.trim((item.type).toLowerCase().replace('subject', ''));  //for displaying consent type, note: this will remove text 'subject' from being displayed
                             touObj.push(item);
@@ -595,7 +597,11 @@ var fillContent = {
             });
 
             //NEED TO CHECK THAT USER HAS ACTUALLY CONSENTED TO TERMS of USE
-            var showInitialConsentTerms = (touObj.length > 0);
+            var hasInitialConsentTerms = (touObj.length > 0);
+            var getIntDate = function(d) {
+                if (hasValue(d)) return d.replace(/[\-\:T]/gi, "");
+                else return "";
+            };
             var getTOUTableHTML = function(includeHeader) {
                 var touContent = "";
                 if (includeHeader) {
@@ -608,6 +614,7 @@ var fillContent = {
                 touObj.forEach(function(item, index) {
                     var org = OT.orgsList[item.organization_id];
                     touContent += "<tr data-tou-type='" + item.type + "'>";
+                    touContent += "<td class='tnth-hide'>" + getIntDate(item.raw_date) + "</td>";
                     touContent += "<td><span class='eproms-tou-table-text'>" + (org && hasValue(org.name) ? i18next.t(org.name) : "--") + "</span><span class='truenth-tou-table-text'>TrueNTH USA</span></td>";
                     touContent += "<td><span class='text-success small-text eproms-tou-table-text'>Agreed to <a href='" + item.agreement_url + "' target='_blank'><span class='text-capitalize'>" + i18next.t(item.display_type) + "</span></a></span><span class='text-success small-text truenth-tou-table-text'>" + i18next.t("Agreed to terms") + "</span></td>";
                     touContent += "<td><span class='eproms-tou-table-text text-capitalize'><a href='" + item.agreement_url + "' target='_blank'>" + i18next.t(item.display_type) + "</a></span><span class='truenth-tou-table-text'>" + i18next.t("TrueNTH USA Terms of Use") + "</span> <span class='agreement'>&nbsp;<a href='" + item.agreement_url + "' target='_blank'><em>" + i18next.t("View") + "</em></a></span></td>";
@@ -616,9 +623,10 @@ var fillContent = {
                 return touContent;
             };
 
+            if (hasInitialConsentTerms) content += getTOUTableHTML();
+
             dataArray.forEach(function(item, index) {
-                if (item.deleted) return true;
-                if (!(existingOrgs[item.organization_id]) && !(/null/.test(item.agreement_url))) {
+                if (!(/null/.test(item.agreement_url))) {
                     if (!OT.initialized) tnthAjax.getOrgs(userId, false, true, null);
                     hasContent = true;
                     var orgName = "";
@@ -631,6 +639,7 @@ var fillContent = {
                         try {
                             var topOrgID = OT.getTopLevelParentOrg(orgId);
                             orgName = OT.orgsList[topOrgID].name;
+                            if (topOrgID != orgId)  orgName += " - " + OT.orgsList[orgId].name;
 
                         } catch(e) {
                             orgName = OT.orgsList[orgId].name;
@@ -654,11 +663,31 @@ var fillContent = {
                     };
 
                     switch(consentStatus) {
-                        case "deleted":
-                            sDisplay = "<span class='text-danger'>&#10007;</span><br/><span class='text-danger' style='font-size: 0.9em'>(" + i18next.t("deleted on") + " " + deleteDate.replace("T", " ") + " GMT)</span>";
-                            break;
                         case "expired":
                             sDisplay = "<span class='text-warning'>&#10007; <br><span>(" + i18next.t("expired") + "</span>";
+                            break;
+                        case "deleted":
+                            //new consent replacing existing
+                            //Deleted consent agreement
+                            var rc = (item.deleted.comment).toLowerCase() == "new consent replacing existing";
+                            var dc = (item.deleted.comment).toLowerCase() == "deleted consent agreement";
+                            var clss = rc ? 'text-warning': 'text-danger';
+                            sDisplay = "<div class='" + clss + "' style='font-size:0.95em;'>&#10007; ";
+                            if (dc) sDisplay += "Consent removed";
+                            else {
+                                if (se && sr && ir) {
+                                        if (isDefault) sDisplay += consentLabels["default"];
+                                        else sDisplay += consentLabels["consented"];
+                                } else if (se && ir && !sr) {
+                                        sDisplay += consentLabels["withdrawn"];
+                                } else if (!se && !ir && !sr) {
+                                        sDisplay += consentLabels["purged"];
+                                } else {
+                                    //backward compatible?
+                                    sDisplay += consentLabels["consented"];
+                                };
+                            };
+                            sDisplay += "</div>";
                             break;
                         case "active":
                             if (se && sr && ir) {
@@ -741,12 +770,13 @@ var fillContent = {
                             + '</div></div></div>';
 
                     };
-
-                    if (showInitialConsentTerms) content += getTOUTableHTML();
-
-                    content += "<tr>";
+                    content += "<tr " + (existingOrgs[item.organization_id] || item.deleted?"class='history'":"") + ">";
 
                     [
+                        {
+                            content: item.deleted ? getIntDate(item.deleted.lastUpdated) : getIntDate(item.signed),
+                            "_class": "tnth-hide"
+                        },
                         {
                             content: (orgName != "" && orgName != undefined? orgName : item.organization_id)
                         },
@@ -788,7 +818,7 @@ var fillContent = {
                      if ($(this).attr("show") == "true") $(this).addClass("show");
                  });
             } else {
-                if (showInitialConsentTerms) {
+                if (hasInitialConsentTerms) {
                         content = "<table id='consentListTable' class='table-bordered table-hover table-condensed table-responsive' style='width: 100%; max-width:100%'>"
                         content += getTOUTableHTML(true);
                         content += "</table>"
@@ -943,7 +973,7 @@ var fillContent = {
                 var msg = i18next.t("You do not have permission to edit this patient record.");
                 $("#profileConsentList").html("<p class='text-danger'>" + msg + "</p>");
             } else {
-                if (showInitialConsentTerms) {
+                if (hasInitialConsentTerms) {
                     content = "<table id='consentListTable' class='table-bordered table-hover table-condensed table-responsive' style='width: 100%; max-width:100%'>"
                     content += getTOUTableHTML(true);
                     content += "</table>";

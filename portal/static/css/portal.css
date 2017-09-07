@@ -1379,10 +1379,6 @@ div.right-panel {
   font-size: 0.95em;
   color: #F5F5F5;
 }
-#mainDiv.profile .footer-wrapper {
-  margin-left: 25%;
-  position: inherit !important;
-}
 #mainDiv.profile .footer-container.flex {
   clear: both;
   display: flex;
@@ -2044,6 +2040,9 @@ sub.pointer:hover {
 #profileConsentList .eproms-consent-status-header,
 #profileConsentList .eproms-consent-date-header,
 #profileConsentList .eproms-tou-table-text {
+  display: none;
+}
+#profileConsentList tr.history {
   display: none;
 }
 #identityVerificationContainer {

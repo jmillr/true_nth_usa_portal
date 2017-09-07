@@ -2241,7 +2241,7 @@ div.biopsy-option:last-of-type {
 .withdrawn-label [data-eproms] {
   display: inline;
 }
-.withdrawn-label [data-truenth] {
+[data-truenth] {
   display: none;
 }
 #consentDateEditContainer {
@@ -2271,6 +2271,12 @@ div.biopsy-option:last-of-type {
 }
 #profileConsentList .consentlist-cell {
   background-color: #fbf9f9;
+}
+#profileConsentList tr.history {
+  opacity: 0.6;
+}
+#profileConsentList tr.history.odd td {
+  background-color: #f2f2f3;
 }
 .button--LR,
 .button--LR.data-show,
