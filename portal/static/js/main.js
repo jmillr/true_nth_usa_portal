@@ -1976,7 +1976,7 @@ var tnthAjax = {
             contentType: params.contentType? params.contentType: "application/json; charset=utf-8",
             cache: (params.cache ? params.cache : false),
             async: (params.sync ? false : true),
-            data: params.data ? params.data: null
+            data: (params.data ? params.data: null)
         }).done(function(data) {
             if (callback) callback(data);
         }).fail(function(xhr){
@@ -1986,7 +1986,7 @@ var tnthAjax = {
     },
     "sendError": function(xhr, url, userId) {
     	 if (hasValue(xhr)) {
-	           var errorMessage = "Error occurred processing request -  status: " + (parseInt(xhr.status) == 0 ? "request timed out/network error": xhr.status) + ", response text: " + (hasValue(xhr.responseText)?xhr.responseText:"no response text returned from server");
+	           var errorMessage = "[Error occurred processing request]  status - " + (parseInt(xhr.status) == 0 ? "request timed out/network error": xhr.status) + ", response text - " + (hasValue(xhr.responseText)?xhr.responseText:"no response text returned from server");
 	           tnthAjax.reportError(hasValue(userId)?userId:"Not available",url, errorMessage, true);
          };
     },
@@ -2970,7 +2970,7 @@ var tnthAjax = {
     },
     "passwordReset": function(userId, callback) {
     	if (!hasValue(userId)) return false;
-    	this.sendRequest('/api/user/'+userId+'/-password_reset', 'POST', userId, {'contentType':'application/x-www-form-urlencoded; charset=UTF-8'}, function(data) {
+    	this.sendRequest('/api/user/'+userId+'/password_reset', 'POST', userId, {'contentType':'application/x-www-form-urlencoded; charset=UTF-8'}, function(data) {
     		if (data) {
     			if (!data.error) {
     				if (callback) callback(data);
